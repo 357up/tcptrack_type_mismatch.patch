@@ -1,0 +1,60 @@
+diff --unified --recursive --text tcptrack-1.4.3.orig/src/TextUI.cc tcptrack-1.4.3.new/src/TextUI.cc
+--- tcptrack-1.4.3.orig/src/TextUI.cc	2015-04-23 11:04:40.000000000 +0300
++++ tcptrack-1.4.3.new/src/TextUI.cc	2021-12-16 16:38:07.578384665 +0200
+@@ -162,6 +162,9 @@
+ 						sort_type=SORT_BYTES;
+ 						break;
+ 					case SORT_BYTES:
++						sort_type=SORT_IDLE;
++						break;
++					case SORT_IDLE:
+ 						sort_type=SORT_UN;
+ 						break;
+ 				}
+@@ -309,11 +312,11 @@
+ 
+ 		move(row,58);
+ 		if( ic->getIdleSeconds() < 60 )
+-			printw("%ds",ic->getIdleSeconds());
+-		else if( ic->getIdleSeconds() > 59 ) 
+-			printw("%dm",ic->getIdleSeconds()/60);
+-		else if( ic->getIdleSeconds() > 3559 )
+-			printw("%dh",ic->getIdleSeconds()/3600);
++			printw("%ds",(int)(ic->getIdleSeconds()));
++		else if( ic->getIdleSeconds() < 3600 ) 
++			printw("%dm",(int)(ic->getIdleSeconds()/60));
++		else
++			printw("%ldh",(long)(ic->getIdleSeconds()/3600));
+ 
+ 		move(row,63);
+ 		if( ic->activityToggle() )
+@@ -388,6 +391,12 @@
+ 			attroff(A_UNDERLINE);
+ 			printw("orted by bytes");
+ 			break;
++       case SORT_IDLE:
++			attron(A_UNDERLINE);
++			printw("S");
++			attroff(A_UNDERLINE);
++			printw("orted by idle");
++			break;
+ 	}
+ 
+ 	attroff(A_REVERSE);
+@@ -399,12 +408,12 @@
+ {
+ 	if( Bps < 1024 )
+ 		printw("%d B/s",Bps);
+-	if( Bps >= 1024 && Bps < 1024*1024 )
++	else if(Bps < 1024*1024 )
+ 		printw("%d KB/s",Bps/1024);
+-	if( Bps >= 1024*1024 && Bps <= 99999999 )
++	else if(Bps < 1024*1024*1024 )
+ 		printw("%d MB/s",Bps/(1024*1024));
+-	if( Bps > 99999999 ) // not enough room to display it
+-		printw("LUDICROUS"); // LUDICROUS SPEED!!
++	else
++		printw("%d GB/s",Bps/(1024*1024*1024));
+ }
+ 
+ // reset the terminal. used only for unclean exits.
